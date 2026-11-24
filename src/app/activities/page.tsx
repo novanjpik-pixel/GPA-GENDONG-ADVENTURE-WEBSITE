@@ -37,13 +37,16 @@ export default async function ActivitiesPage() {
   let posts: Post[] | null = await getWordPressPosts(100);
 
   if (posts === null) {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('date', { ascending: false });
-
-    posts = error ? [] : (data || []).map((row) => mapRowToPost(row as Record<string, unknown>));
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('date', { ascending: false });
+      posts = error ? [] : (data || []).map((row) => mapRowToPost(row as Record<string, unknown>));
+    } catch {
+      posts = [];
+    }
   }
 
   return (

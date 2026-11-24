@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 const SESSION_COOKIE = 'gpa_admin_session';
 
 function getProjectRef(): string {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   return url.match(/https:\/\/([^.]+)\./)?.[1] ?? '';
 }
 
@@ -68,9 +68,14 @@ export async function middleware(request: NextRequest) {
   injectTokenFromHeader(request);
   const supabaseResponse = NextResponse.next({ request });
 
+  // Jangan sampai situs mati total bila variabel lingkungan Supabase belum terisi.
+  const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!sbUrl || !sbKey) return supabaseResponse;
+
   createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    sbUrl,
+    sbKey,
     {
       cookies: {
         getAll() {
